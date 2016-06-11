@@ -44,6 +44,15 @@ let sources = [
     taint_kind = Sil.Tk_shared_preferences_data;
     language = Config.Java
   };
+  {
+    classname = "javax.servlet.ServletRequest";
+    method_name = "getParameter";
+    ret_type = "java.lang.String";
+    params = ["java.lang.String"];
+    is_static = false;
+    taint_kind = Sil.Tk_privacy_annotation;
+    language = Config.Java
+  };
   (* === iOS === *)
   {
     classname = "NSHTTPCookie";
@@ -172,6 +181,24 @@ let sinks = [
     taint_kind = Sil.Tk_privacy_annotation;
     language = Config.Java;
   }, [0]);
+  ({
+    classname = "javax.servlet.ServletOutputStream";
+    method_name = "print";
+    ret_type = "void";
+    params = ["java.lang.String"];
+    is_static = false;
+    taint_kind = Sil.Tk_privacy_annotation;
+    language = Config.Java;
+  }, [1]);
+  ({
+    classname = "javax.servlet.ServletOutputStream";
+    method_name = "println";
+    ret_type = "void";
+    params = ["java.lang.String"];
+    is_static = false;
+    taint_kind = Sil.Tk_privacy_annotation;
+    language = Config.Java;
+  }, [1]);
 
   (* === iOS === *)
   ({
