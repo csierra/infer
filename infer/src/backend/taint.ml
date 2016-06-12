@@ -329,6 +329,16 @@ let attrs_opt_get_annots = function
   | Some attrs -> attrs.ProcAttributes.method_annotation
   | None -> Sil.method_annotation_empty
 
+let ends_with haystack needle =
+    let length = String.length needle in
+    let haystack_length = String.length haystack in
+    let end_string = try 
+	Some (String.sub haystack (haystack_length - length) length)
+      with Invalid_argument(a) -> None in
+    match end_string with 
+    | Some s -> s = needle
+    | None -> false
+	      
 (* TODO: return a taint kind *)
 (** returns true if [callee_pname] returns a tainted value *)
 let returns_tainted callee_pname callee_attrs_opt =
@@ -342,6 +352,11 @@ let returns_tainted callee_pname callee_attrs_opt =
     if Annotations.ia_is_integrity_source ret_annot
     then Some Sil.Tk_integrity_annotation
     else if Annotations.ia_is_privacy_source ret_annot
+    then Some Sil.Tk_privacy_annotation
+    else if
+      match callee_pname with 
+      | Procname.Java(java_callee) -> ends_with (Procname.java_get_simple_class_name java_callee) "LocalServiceImpl"
+      | _ -> false
     then Some Sil.Tk_privacy_annotation
     else None
 
@@ -410,3 +425,5 @@ let add_tainting_attribute att pvar_param prop =
            Prop.add_or_replace_exp_attribute prop_acc rhs att
        | _ -> prop_acc)
     prop (Prop.get_sigma prop)
+
+
