@@ -338,7 +338,16 @@ let ends_with haystack needle =
     match end_string with 
     | Some s -> s = needle
     | None -> false
-	      
+
+
+let is_liferay_service callee_pname =
+  let service_endings = ["LocalServiceImpl"; "LocalService"; "Persistence"; "PersistenceImpl"; "LocalServiceUtil"; "ServiceUtil"] in
+  match callee_pname with
+  | Procname.Java(java_callee) ->
+     let java_class_name = Procname.java_get_simple_class_name java_callee in
+     IList.exists (ends_with java_class_name) service_endings
+  | _ -> false
+	   
 (* TODO: return a taint kind *)
 (** returns true if [callee_pname] returns a tainted value *)
 let returns_tainted callee_pname callee_attrs_opt =
@@ -353,10 +362,7 @@ let returns_tainted callee_pname callee_attrs_opt =
     then Some Sil.Tk_integrity_annotation
     else if Annotations.ia_is_privacy_source ret_annot
     then Some Sil.Tk_privacy_annotation
-    else if
-      match callee_pname with 
-      | Procname.Java(java_callee) -> ends_with (Procname.java_get_simple_class_name java_callee) "LocalServiceImpl"
-      | _ -> false
+    else if is_liferay_service callee_pname
     then Some Sil.Tk_privacy_annotation
     else None
 
